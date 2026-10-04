@@ -3,12 +3,8 @@
 #include <sstream>
 
 void DFAChecker::initialize_parser(cxxopts::Options &options) {
-    try {
-        options.add_options()
-            ("check", "Ellenorizendo szo/szavak", cxxopts::value<std::string>());
-    } catch (const cxxopts::exceptions::specification &) {
-        // Ha egy masik feladat (pl. dfa.cpp) mar hozzaadta a "check" opciot, elkapjuk a hibat
-    }
+    options.add_options()
+        ("check", "Ellenorizendo szo/szavak", cxxopts::value<std::string>());
 }
 
 bool DFAChecker::is_chosen_problem(const cxxopts::ParseResult &args) {
