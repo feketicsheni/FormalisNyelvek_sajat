@@ -3,9 +3,13 @@
 #include <sstream>
 #include <iostream>
 
-void DFAProblem::initialize_parser(cxxopts::Options& options) {
-    options.add_options()
-        ("check", "Check word(s) separated by commas", cxxopts::value<std::string>());
+void DFAProblem::initialize_parser(cxxopts::Options &options) {
+    try {
+        options.add_options()
+            ("check", "Ellenorizendo szo/szavak", cxxopts::value<std::string>());
+    } catch (const cxxopts::exceptions::specification &) {
+        // Ha a "check" mar letezik, figyelmen kívül hagyjuk
+    }
 }
 
 bool DFAProblem::is_chosen_problem(const cxxopts::ParseResult& args) {

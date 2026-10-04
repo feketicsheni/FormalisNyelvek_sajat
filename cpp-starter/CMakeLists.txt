@@ -13,4 +13,7 @@ add_executable(project
         problems/sum.cpp
         problems/dfa.hpp
         problems/dfa.cpp
+        problems/dfa_checker.cpp
+        problems/dfa_checker.hpp
+
 )

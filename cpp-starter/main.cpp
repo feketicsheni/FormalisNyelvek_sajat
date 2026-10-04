@@ -7,12 +7,14 @@
 // Add your own problems here
 #include "problems/sum.hpp"
 #include "problems/dfa.hpp"
+#include "problems/dfa_checker.hpp"
 
 int runProblem(int argc, char* argv[]) {
     // Add your own problems here
     std::vector<Problem *> problems;
     problems.push_back(new SumProblem());
     problems.push_back(new DFAProblem());
+    problems.push_back(new DFAChecker()); // <-- Itt van regisztrálva a feladatod
 
     cxxopts::Options options("project", "Run the specific problem");
 
@@ -20,7 +22,7 @@ int runProblem(int argc, char* argv[]) {
         ("i,input", "Input file name", cxxopts::value<std::string>())
         ("o,output", "Output file name", cxxopts::value<std::string>())
         ("h,help", "Print usage");
-    
+
     for (Problem *p : problems) {
         p->initialize_parser(options);
     }
