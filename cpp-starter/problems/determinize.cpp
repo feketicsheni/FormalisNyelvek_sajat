@@ -185,8 +185,7 @@ void DeterminizeProblem::determinize(
          current_index < dfa_states.size();
          ++current_index) {
 
-        const StateSet &current = dfa_states[current_index];
-
+        StateSet current = dfa_states[current_index];
         // Az ábécét rendezett sorrendben dolgozzuk fel.
         std::vector<std::string> sorted_alphabet =
             automaton.alphabet;
