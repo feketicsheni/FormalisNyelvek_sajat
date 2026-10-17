@@ -15,5 +15,7 @@ add_executable(project
         problems/dfa.cpp
         problems/dfa_checker.cpp
         problems/dfa_checker.hpp
+        problems/determinize.cpp
+        problems/determinize.hpp
 
 )
