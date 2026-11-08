@@ -166,12 +166,14 @@ void RegexProblem::solve1(
             anyMessage
         ),
 
+
         // 8. ExoPlayer debug
-        makePattern(
-            anyDate, anyTime, anyId,
-            "D", R"(\s*ExoPlayer\s*)",
-            anyMessage
-        ),
+        // 8. ExoPlayer debug
+        // 8. ExoPlayer debug (D)
+// Az ExoPlayer lehet a tagben vagy a message részben
+regex(
+    R"(^\s*[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?\s+[0-9]+\s+[0-9]+\s+D\s+[^:\r\n]*ExoPlayer[^:\r\n]*:.*$|^\s*[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?\s+[0-9]+\s+[0-9]+\s+D\s+[^:\r\n]+:.*ExoPlayer.*$)"
+),
 
         // 9. E vagy W, Java fájlpozícióval
         makePattern(
