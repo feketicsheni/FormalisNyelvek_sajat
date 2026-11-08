@@ -85,74 +85,77 @@ int RegexProblem::run(const cxxopts::ParseResult &args) {
 
 // 1. feladat: 10 feltetel megszamlalasa
 
+
 void RegexProblem::solve1(
     const vector<string> &lines, ostream &out
 ) {
     vector<int> count(10, 0);
 
-    // A PDF-ben megadott logcat-formátum alapján.
     const regex logRegex(
-        R"(^([0-9]+-[0-9]+)\s+([0-9]+:[0-9]+:[0-9]+(?:\.[0-9]+)?)\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):(?:\s*(.*))?$)"
+        R"(^([0-9]{2}-[0-9]{2})\s+([0-9]{2}:[0-9]{2}:[0-9]{2})\.[0-9]+\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):(?:\s*(.*))?$)"
     );
 
-    const regex javaLocation(R"(\.java:)");
+    const regex javaLocation(R"(\.java:[0-9]+)");
     const regex threadWord(R"(Thread)");
-    const regex lowMemoryTag(R"(lowmemorykiller)");
-    const regex packageManagerTag(R"(PackageManager)");
-    const regex exoPlayerTag(R"(ExoPlayer)");
+
+    bool errorOrWarningContext = false;
 
     for (const string &line : lines) {
         smatch m;
 
-        if (!regex_search(line, m, logRegex))
-            continue;
+        if (regex_search(line, m, logRegex)) {
+            string date = m[1].str();
+            string time = m[2].str();
+            string pid = m[3].str();
+            string level = m[5].str();
+            string tag = m[6].str();
+            string message = m[7].str();
 
-        string date = m[1].str();
-        string time = m[2].str();
-        string pid = m[3].str();
-        string level = m[5].str();
-        string tag = m[6].str();
-        string message = m[7].str();
+            errorOrWarningContext =
+                (level == "E" || level == "W");
 
-        if (regex_match(date, regex(R"(10-15)")))
-            count[0]++;
+            if (date == "10-15")
+                count[0]++;
 
-        if (date == "10-15" &&
-            regex_search(time, regex(R"(^10:18:51(?:\.|$))")))
-            count[1]++;
+            if (date == "10-15" &&
+                time == "10:18:51")
+                count[1]++;
 
-        if (regex_search(time, regex(R"(:51(?:\.|$))")))
-            count[2]++;
+            if (time.substr(6, 2) == "51")
+                count[2]++;
 
-        if (regex_search(tag, lowMemoryTag))
-            count[3]++;
+            if (regex_search(tag, regex(R"(lowmemorykiller)")))
+                count[3]++;
 
-        if (pid == "221" &&
-            regex_search(time, regex(R"(^10:18:51(?:\.|$))")))
-            count[4]++;
+            if (time == "10:18:51" && pid == "221")
+                count[4]++;
 
-        if (level == "E")
-            count[5]++;
+            if (level == "E")
+                count[5]++;
 
-        if (level == "W" &&
-            regex_search(tag, packageManagerTag))
-            count[6]++;
+            if (level == "W" &&
+                regex_search(tag, regex(R"(PackageManager)")))
+                count[6]++;
 
-        if (level == "D" &&
-            regex_search(tag, exoPlayerTag))
-            count[7]++;
+            if (level == "D" &&
+                regex_search(tag, regex(R"(ExoPlayer)")))
+                count[7]++;
 
-        if ((level == "E" || level == "W") &&
-            regex_search(line, javaLocation))
+            if (regex_search(message, threadWord))
+                count[9]++;
+        }
+
+        // A Java stack trace folytatosorait is figyelembe vesszuk.
+        if (errorOrWarningContext &&
+            regex_search(line, javaLocation)) {
             count[8]++;
-
-        if (regex_search(message, threadWord))
-            count[9]++;
+            }
     }
 
     for (int value : count)
         out << value << '\n';
 }
+
 
 
 // 2. feladat: Java fajlnevek a hibakbol
