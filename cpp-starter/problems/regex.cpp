@@ -91,19 +91,27 @@ void RegexProblem::solve1(
 ) {
     vector<int> count(10, 0);
 
-    const regex logRegex(
-        R"(^([0-9]{2}-[0-9]{2})\s+([0-9]{2}:[0-9]{2}:[0-9]{2})\.[0-9]+\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):(?:\s*(.*))?$)"
+    const regex header(
+        R"(^([0-9-]+)\s+([0-9:.]+)\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):(?:\s*(.*))?$)"
     );
 
-    const regex javaLocation(R"(\.java:[0-9]+)");
-    const regex threadWord(R"(Thread)");
+    const regex datePattern(R"(^10-15$)");
+    const regex dateTimePattern(R"(^10:18:51(?:\.[0-9]+)?$)");
+    const regex secondsPattern(R"(^[0-9]{2}:[0-9]{2}:51(?:\.[0-9]+)?$)");
+    const regex pidPattern(R"(^221$)");
+    const regex lowMemoryPattern(R"(lowmemorykiller)");
+    const regex packagePattern(R"(PackageManager)");
+    const regex exoPattern(R"(ExoPlayer)");
+    const regex javaPattern(R"(\.java:)");
+    const regex threadPattern(R"(Thread)");
 
-    bool errorOrWarningContext = false;
+    bool errorWarningContext = false;
+    bool javaCounted = false;
 
     for (const string &line : lines) {
         smatch m;
 
-        if (regex_search(line, m, logRegex)) {
+        if (regex_search(line, m, header)) {
             string date = m[1].str();
             string time = m[2].str();
             string pid = m[3].str();
@@ -111,53 +119,52 @@ void RegexProblem::solve1(
             string tag = m[6].str();
             string message = m[7].str();
 
-            errorOrWarningContext =
-                (level == "E" || level == "W");
+            errorWarningContext =
+                regex_match(level, regex(R"([EW])"));
+            javaCounted = false;
 
-            if (date == "10-15")
+            if (regex_match(date, datePattern))
                 count[0]++;
 
-            if (date == "10-15" &&
-                time == "10:18:51")
+            if (regex_match(date, datePattern) &&
+                regex_match(time, dateTimePattern))
                 count[1]++;
 
-            if (time.substr(6, 2) == "51")
+            if (regex_match(time, secondsPattern))
                 count[2]++;
 
-            if (regex_search(tag, regex(R"(lowmemorykiller)")))
+            if (regex_search(tag, lowMemoryPattern))
                 count[3]++;
 
-            if (time == "10:18:51" && pid == "221")
+            if (regex_match(time, dateTimePattern) &&
+                regex_match(pid, pidPattern))
                 count[4]++;
 
-            if (level == "E")
+            if (regex_match(level, regex(R"(E)")))
                 count[5]++;
 
-            if (level == "W" &&
-                regex_search(tag, regex(R"(PackageManager)")))
+            if (regex_match(level, regex(R"(W)")) &&
+                regex_search(tag, packagePattern))
                 count[6]++;
 
-            if (level == "D" &&
-                regex_search(tag, regex(R"(ExoPlayer)")))
+            if (regex_match(level, regex(R"(D)")) &&
+                regex_search(tag, exoPattern))
                 count[7]++;
 
-            if (regex_search(message, threadWord))
+            if (regex_search(message, threadPattern))
                 count[9]++;
         }
 
-        // A Java stack trace folytatosorait is figyelembe vesszuk.
-        if (errorOrWarningContext &&
-            regex_search(line, javaLocation)) {
+        if (errorWarningContext &&
+            !javaCounted &&
+            regex_search(line, javaPattern)) {
             count[8]++;
-            }
+            javaCounted = true;
+        }
     }
 
-    for (size_t i = 0; i < count.size(); i++) {
-        if (i > 0)
-            out << " ";
-        out << count[i];
-    }
-    out << '\n';
+    for (int value : count)
+        out << value << '\n';
 }
 
 
