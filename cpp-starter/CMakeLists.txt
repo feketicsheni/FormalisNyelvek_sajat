@@ -17,5 +17,7 @@ add_executable(project
         problems/dfa_checker.hpp
         problems/determinize.cpp
         problems/determinize.hpp
+        problems/minimize.cpp
+        problems/minimize.hpp
 
 )

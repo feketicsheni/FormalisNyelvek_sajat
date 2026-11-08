@@ -9,6 +9,7 @@
 #include "problems/dfa.hpp"
 #include "problems/dfa_checker.hpp"
 #include "problems/determinize.hpp"
+#include "problems/minimize.hpp"
 
 int runProblem(int argc, char *argv[]) {
     // Add your own problems here
@@ -17,6 +18,7 @@ int runProblem(int argc, char *argv[]) {
     problems.push_back(new DFAProblem());
     problems.push_back(new DFAChecker());
     problems.push_back(new DeterminizeProblem());
+    problems.push_back(new MinimizeProblem());
 
 
     cxxopts::Options options("project", "Run the specific problem");
