@@ -19,5 +19,7 @@ add_executable(project
         problems/determinize.hpp
         problems/minimize.cpp
         problems/minimize.hpp
+        problems/regex.hpp
+        problems/regex.cpp
 
 )

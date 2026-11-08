@@ -10,6 +10,7 @@
 #include "problems/dfa_checker.hpp"
 #include "problems/determinize.hpp"
 #include "problems/minimize.hpp"
+#include "problems/regex.hpp"
 
 int runProblem(int argc, char *argv[]) {
     // Add your own problems here
@@ -19,6 +20,8 @@ int runProblem(int argc, char *argv[]) {
     problems.push_back(new DFAChecker());
     problems.push_back(new DeterminizeProblem());
     problems.push_back(new MinimizeProblem());
+    problems.push_back(new RegexProblem());
+
 
 
     cxxopts::Options options("project", "Run the specific problem");
@@ -36,8 +39,7 @@ int runProblem(int argc, char *argv[]) {
 
     for (Problem *p: problems) {
         if (p->is_chosen_problem(args)) {
-            p->run(args);
-            return 0;
+            return p->run(args);
         }
     }
 
