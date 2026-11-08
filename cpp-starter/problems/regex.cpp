@@ -84,15 +84,27 @@ int RegexProblem::run(const cxxopts::ParseResult &args) {
 }
 
 // 1. feladat: 10 feltetel megszamlalasa
+
 void RegexProblem::solve1(
     const vector<string> &lines, ostream &out
 ) {
     vector<int> count(10, 0);
 
+    // A PDF-ben megadott logcat-formátum alapján.
+    const regex logRegex(
+        R"(^([0-9]+-[0-9]+)\s+([0-9]+:[0-9]+:[0-9]+(?:\.[0-9]+)?)\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):(?:\s*(.*))?$)"
+    );
+
+    const regex javaLocation(R"(\.java:)");
+    const regex threadWord(R"(Thread)");
+    const regex lowMemoryTag(R"(lowmemorykiller)");
+    const regex packageManagerTag(R"(PackageManager)");
+    const regex exoPlayerTag(R"(ExoPlayer)");
+
     for (const string &line : lines) {
         smatch m;
 
-        if (!parseLog(line, m))
+        if (!regex_search(line, m, logRegex))
             continue;
 
         string date = m[1].str();
@@ -105,39 +117,43 @@ void RegexProblem::solve1(
         if (regex_match(date, regex(R"(10-15)")))
             count[0]++;
 
-        if (date == "10-15" && time == "10:18:51")
+        if (date == "10-15" &&
+            regex_search(time, regex(R"(^10:18:51(?:\.|$))")))
             count[1]++;
 
-        if (contains(time, R"(:51$)"))
+        if (regex_search(time, regex(R"(:51(?:\.|$))")))
             count[2]++;
 
-        if (contains(tag, R"(lowmemorykiller)"))
+        if (regex_search(tag, lowMemoryTag))
             count[3]++;
 
-        if (time == "10:18:51" && pid == "221")
+        if (pid == "221" &&
+            regex_search(time, regex(R"(^10:18:51(?:\.|$))")))
             count[4]++;
 
         if (level == "E")
             count[5]++;
 
         if (level == "W" &&
-            contains(tag, R"(PackageManager)"))
+            regex_search(tag, packageManagerTag))
             count[6]++;
 
         if (level == "D" &&
-            contains(tag, R"(ExoPlayer)"))
+            regex_search(tag, exoPlayerTag))
             count[7]++;
 
-        if (regex_search(line, regex(R"(\b[EW]\s+.+?:.*\.java:)")))
+        if ((level == "E" || level == "W") &&
+            regex_search(line, javaLocation))
             count[8]++;
 
-        if (contains(message, R"(Thread)"))
+        if (regex_search(message, threadWord))
             count[9]++;
     }
 
     for (int value : count)
         out << value << '\n';
 }
+
 
 // 2. feladat: Java fajlnevek a hibakbol
 void RegexProblem::solve2(
