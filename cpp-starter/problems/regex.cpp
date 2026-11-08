@@ -89,61 +89,116 @@ void RegexProblem::solve1(
 ) {
     vector<int> count(10, 0);
 
-    const regex header(
-        R"(^([0-9]{2}-[0-9]{2})\s+([0-9]{2}:[0-9]{2}:[0-9]{2})(?:\.[0-9]+)?\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):\s*(.*)$)"
-    );
+    // A logcat sor mezőinek formátuma
+    const string anyDate = R"([0-9]{2}-[0-9]{2})";
+    const string anyTime = R"([0-9]{2}:[0-9]{2}:[0-9]{2})";
+    const string fraction = R"((?:\.[0-9]+)?)";
+    const string anyId = R"([0-9]+)";
+    const string anyLevel = R"([IDVEFAW])";
+    const string anyTag = R"([^:\r\n]+)";
+    const string anyMessage = R"(.*)";
 
-    const regex second51(R"(:51$)");
-    const regex javaPosition(R"(\.java:)");
-    const regex threadPattern(R"(Thread)");
+    // Teljes logcat sor összeállítása.
+    // A paraméterekkel minden mező külön szabályozható.
+    auto makePattern = [&](const string &date,
+                           const string &time,
+                           const string &pid,
+                           const string &level,
+                           const string &tag,
+                           const string &message) -> regex {
+        string pattern =
+            R"(^\s*)" +
+            date + R"(\s+)" +
+            time + fraction + R"(\s+)" +
+            pid + R"(\s+)" +
+            anyId + R"(\s+)" +
+            level + R"(\s+)" +
+            tag + R"(:\s*)" +
+            message + R"(\s*$)";
+
+        return regex(pattern);
+    };
+
+    const vector<regex> patterns = {
+
+        // 1. Október 15.
+        makePattern(
+            "10-15", anyTime, anyId,
+            anyLevel, anyTag, anyMessage
+        ),
+
+        // 2. Október 15., 10:18:51
+        makePattern(
+            "10-15", "10:18:51", anyId,
+            anyLevel, anyTag, anyMessage
+        ),
+
+        // 3. Bármelyik nap, 51. másodperc
+        makePattern(
+            anyDate,
+            R"([0-9]{2}:[0-9]{2}:51)",
+            anyId, anyLevel, anyTag, anyMessage
+        ),
+
+        // 4. lowmemorykiller tag
+        makePattern(
+            anyDate, anyTime, anyId,
+            anyLevel, R"(\s*lowmemorykiller\s*)",
+            anyMessage
+        ),
+
+        // 5. 10:18:51 és PID = 221
+        makePattern(
+            anyDate, "10:18:51", "221",
+            anyLevel, anyTag, anyMessage
+        ),
+
+        // 6. E szintű hibák
+        makePattern(
+            anyDate, anyTime, anyId,
+            "E", anyTag, anyMessage
+        ),
+
+        // 7. PackageManager warning
+        makePattern(
+            anyDate, anyTime, anyId,
+            "W", R"(\s*PackageManager\s*)",
+            anyMessage
+        ),
+
+        // 8. ExoPlayer debug
+        makePattern(
+            anyDate, anyTime, anyId,
+            "D", R"(\s*ExoPlayer\s*)",
+            anyMessage
+        ),
+
+        // 9. E vagy W, Java fájlpozícióval
+        makePattern(
+            anyDate, anyTime, anyId,
+            "[EW]", anyTag,
+            R"(.*\.java:.*)"
+        ),
+
+        // 10. Thread a message részben
+        makePattern(
+            anyDate, anyTime, anyId,
+            anyLevel, anyTag,
+            R"(.*Thread.*)"
+        )
+    };
 
     for (const string &line : lines) {
-        smatch m;
-
-        if (!regex_match(line, m, header))
-            continue;
-
-        string date = m[1].str();
-        string time = m[2].str();
-        string pid = m[3].str();
-        string level = m[5].str();
-        string tag = m[6].str();
-        string message = m[7].str();
-
-        if (date == "10-15")
-            count[0]++;
-
-        if (date == "10-15" && time == "10:18:51")
-            count[1]++;
-
-        if (regex_search(time, second51))
-            count[2]++;
-
-        if (tag == "lowmemorykiller")
-            count[3]++;
-
-        if (time == "10:18:51" && pid == "221")
-            count[4]++;
-
-        if (level == "E")
-            count[5]++;
-
-        if (level == "W" && tag == "PackageManager")
-            count[6]++;
-
-        if (level == "D" && tag == "ExoPlayer")
-            count[7]++;
-
-        if ((level == "E" || level == "W") &&
-            regex_search(message, javaPosition))
-            count[8]++;
-
-        if (regex_search(message, threadPattern))
-            count[9]++;
+        for (size_t i = 0; i < patterns.size(); ++i) {
+            if (regex_match(line, patterns[i])) {
+                ++count[i];
+            }
+        }
     }
 
-    for (int value : count)
+    for (int value : count) {
         out << value << '\n';
+    }
 }
 
 
