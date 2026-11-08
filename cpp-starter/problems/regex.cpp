@@ -128,8 +128,7 @@ void RegexProblem::solve1(
             contains(tag, R"(ExoPlayer)"))
             count[7]++;
 
-        if (contains(level, R"([EW])") &&
-            contains(message, R"(\.java:)"))
+        if (regex_search(line, regex(R"(\b[EW]\s+.+?:.*\.java:)")))
             count[8]++;
 
         if (contains(message, R"(Thread)"))
