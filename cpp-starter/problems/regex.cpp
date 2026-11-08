@@ -84,38 +84,67 @@ int RegexProblem::run(const cxxopts::ParseResult &args) {
 }
 
 // 1. feladat: 10 feltetel megszamlalasa
-
-
-
 void RegexProblem::solve1(
     const vector<string> &lines, ostream &out
 ) {
     vector<int> count(10, 0);
 
-    const vector<regex> patterns = {
-        regex(R"(^10-15\s)"),
-        regex(R"(^10-15\s+10:18:51(?:\.[0-9]+)?\s)"),
-        regex(R"(^[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2}:51(?:\.[0-9]+)?\s)"),
-        regex(R"(\s+lowmemorykiller\s*:)"),
-        regex(R"(^[0-9]{2}-[0-9]{2}\s+10:18:51(?:\.[0-9]+)?\s+221\s)"),
-        regex(R"(\sE\s+[^:]+:)"),
-        regex(R"(\sW\s+PackageManager\s*:)"),
-        regex(R"(\sD\s+ExoPlayer\s*:)"),
-        regex(R"(\s[EW]\s+.*\.java:)"),
-        regex(R"(\s[IDVEFAW]\s+[^:]+:\s*.*Thread)")
-    };
+    const regex header(
+        R"(^([0-9]{2}-[0-9]{2})\s+([0-9]{2}:[0-9]{2}:[0-9]{2})(?:\.[0-9]+)?\s+([0-9]+)\s+([0-9]+)\s+([IDVEFAW])\s+(.+?):\s*(.*)$)"
+    );
+
+    const regex second51(R"(:51$)");
+    const regex javaPosition(R"(\.java:)");
+    const regex threadPattern(R"(Thread)");
 
     for (const string &line : lines) {
-        for (size_t i = 0; i < patterns.size(); ++i) {
-            if (regex_search(line, patterns[i]))
-                count[i]++;
-        }
+        smatch m;
+
+        if (!regex_match(line, m, header))
+            continue;
+
+        string date = m[1].str();
+        string time = m[2].str();
+        string pid = m[3].str();
+        string level = m[5].str();
+        string tag = m[6].str();
+        string message = m[7].str();
+
+        if (date == "10-15")
+            count[0]++;
+
+        if (date == "10-15" && time == "10:18:51")
+            count[1]++;
+
+        if (regex_search(time, second51))
+            count[2]++;
+
+        if (tag == "lowmemorykiller")
+            count[3]++;
+
+        if (time == "10:18:51" && pid == "221")
+            count[4]++;
+
+        if (level == "E")
+            count[5]++;
+
+        if (level == "W" && tag == "PackageManager")
+            count[6]++;
+
+        if (level == "D" && tag == "ExoPlayer")
+            count[7]++;
+
+        if ((level == "E" || level == "W") &&
+            regex_search(message, javaPosition))
+            count[8]++;
+
+        if (regex_search(message, threadPattern))
+            count[9]++;
     }
 
     for (int value : count)
         out << value << '\n';
 }
-
 
 
 
