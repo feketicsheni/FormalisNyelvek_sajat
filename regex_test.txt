@@ -1,0 +1,4 @@
+10-15 10:18:51.254 221 221 E InputManager-JNI: at java.util.HashMap.putMapEntries(HashMap.java:500)
+10-15 10:18:51.300 221 222 W PackageManager: Thread warning
+10-15 10:18:51.400 601 601 D ExoPlayer: Playback started
+10-16 11:20:51.100 601 601 E TestTag: at Example.java:42
