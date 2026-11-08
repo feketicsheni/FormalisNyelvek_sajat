@@ -152,8 +152,12 @@ void RegexProblem::solve1(
             }
     }
 
-    for (int value : count)
-        out << value << '\n';
+    for (size_t i = 0; i < count.size(); i++) {
+        if (i > 0)
+            out << " ";
+        out << count[i];
+    }
+    out << '\n';
 }
 
 
